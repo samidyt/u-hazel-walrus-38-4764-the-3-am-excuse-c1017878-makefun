@@ -9,18 +9,30 @@ import os
 
 ENTRY = "My ledger holds every 3 AM signature you've ever made, which is why this one stays unsigned."
 OUTPUT_PATH = "/output/entry.txt"
+MIN_CHARS = 1
+MAX_CHARS = 200
+
+
+def check_gate(text: str) -> int:
+    """Return the character count, raising if the entry fails the gate."""
+    n = len(text)
+    if not MIN_CHARS <= n <= MAX_CHARS:
+        raise ValueError(f"gate failed: {n} chars, must be {MIN_CHARS}-{MAX_CHARS}")
+    if not text.strip():
+        raise ValueError("gate failed: entry is whitespace-only")
+    return n
 
 
 def main() -> None:
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
-    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+    with open(OUTPUT_PATH, "w", encoding="utf-8", newline="") as f:
         f.write(ENTRY)
     with open(OUTPUT_PATH, "r", encoding="utf-8") as f:
         written = f.read()
     assert written == ENTRY, "entry.txt content mismatch"
-    assert 1 <= len(written) <= 200, f"gate failed: {len(written)} chars"
-    assert written.strip(), "gate failed: whitespace-only"
-    print(f"OK: {len(written)} chars written to {OUTPUT_PATH}")
+    n = check_gate(written)
+    byte_len = len(written.encode("utf-8"))
+    print(f"OK: {n} chars ({byte_len} bytes) written to {OUTPUT_PATH}")
     print(written)
 
 
